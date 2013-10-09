@@ -99,8 +99,10 @@ def queryTable(table_name, hashquery, database_name):
   conn.row_factory = sqlite3.Row
   c = conn.cursor()
   name = scrub(table_name)
+  sql = "SELECT * FROM %s" % (name)
   query = " AND ".join([ scrub(key) + " = '" + scrubQuoted(value) + "'" for key, value in hashquery.items()])
-  sql = "SELECT * FROM %s WHERE %s" % (name,query)
+  if query:
+    sql += " WHERE %s" % (query)
   c.execute(sql)
   result = c.fetchone()
   c.close()

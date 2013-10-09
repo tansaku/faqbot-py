@@ -35,6 +35,14 @@ class TestDb(unittest.TestCase):
       self.assertEquals("DROPTABLES",scrub("DROP TABLES --"))
       self.assertEquals("column_name",scrub("column_name"))
 
+    def test_query_table(self):
+      createTable("courses", ["ident","crn","textbook","start_date","end_date"], TEST_DATABASE)
+      queryTable("courses",{"ident":"CSCI3651"},TEST_DATABASE)
+
+    def test_query_table_for_all_rows(self):
+      createTable("courses", ["ident","crn","textbook","start_date","end_date"], TEST_DATABASE)
+      queryTable("courses",{},TEST_DATABASE)
+
 
 
   

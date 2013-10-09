@@ -97,7 +97,7 @@ def query(userSaid,conversationTitle=None,talking=None,database_name = DATABASE_
       myopener = MyOpener()
       page = myopener.open('http://google.com/search?btnI=1&q='+userSaid)
       page.read()
-      time.sleep(1)
+      time.sleep(0.1)
       response = page.geturl()
       final = "Does this help? "+ response
     except IOError as e:

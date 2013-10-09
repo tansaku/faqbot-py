@@ -35,6 +35,43 @@ class TestFaq(unittest.TestCase):
     
   def sayAndCheck(self,sentence, response, database = TEST_DATABASE):
     self.assertEquals(query(sentence, database_name = database), response) 
+
+  # so we have to get our list of questions and answers from the live database
+  def testQA(self):
+    createTable("qa", ["question","answer","user"], DATABASE_NAME)
+    questions = queryTable("qa",{},DATABASE_NAME)
+
+    if questions:
+      for (question, answer,user) in questions:
+        self.sayAndCheck(question, answer)
+
+  # two others issues here - we can't handle periods in words, or names like "Software as a Service"
+  def testCorrecting(self):
+    self.sayAndCheckEntity("There is a course CS169 called Software Engineering", "OK","courses", "CS169", {"name":"Software Engineering","ident":"CS169"})
+    self.sayAndCheckEntity("CS169 has a start date of Sep 29th 2013", "OK","courses", "CS169", {"name":"Software Engineering","ident":"CS169","start_date":"Sep 29th 2013"})
+    self.sayAndCheck("What's the start date of CS169?","The start date for CS169 is 'Sep 29th 2013'")
+    self.sayAndCheck("No it's Sep 30th 2013","The start date for CS169 is 'Sep 30th 2013'")
+    # so is there an issue here of the difference between factual updates versus feature updates
+    # well all facts should be user context dependent anyway - but's that separate from testing? or is it?
+    # then there's syntax (or something to do with type of matching speech act)
+
+    # faqbot: hi
+    # person: hi
+    # faqbot: does this help: http://wikipedia.org/Hawaii
+    # person: No you meant to say "what's up?"
+
+    # and then we now have a lookup that we can do before we fall through to the default google action
+    # we also want those lookups to be context dependent on series of previous speech acts, other states
+    # of the world, users. ultimately be able to do merges on the lookup table that seem to conserve space
+    # and provide useful generalization ability ...
+
+    # but anyway, we have two cases 1) we want to change a factual entity representation
+    #                               2) we want to adjust the category of speech act ...
+
+    # makes me think we don't want to be adding to ongoing running tests - just want to 
+    # gradually pull out the new q-a pairs and create appropriate tests based on them
+
+
     
   def testCreateGameEngine(self):
     self.sayAndCheckEntity("There is a game engine Unreal Engine", "OK", "game_engines", "Unreal Engine", {"name":"Unreal Engine","ident":"Unreal Engine"})
