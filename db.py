@@ -62,6 +62,9 @@ def findTableContainingEntityWithIdentOrName(ident, database_name,flag=False):
       return (result,fromThisTable)
   c.close()
   return (None,None)
+
+def identsInTable(table, database_name):
+  pass
   
 def grabColumnNames(table, database_name):
   conn = sqlite3.connect(database_name)

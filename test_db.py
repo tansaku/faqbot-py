@@ -43,6 +43,11 @@ class TestDb(unittest.TestCase):
       createTable("courses", ["ident","crn","textbook","start_date","end_date"], TEST_DATABASE)
       queryTable("courses",{},TEST_DATABASE)
 
+    def test_idents_in_table(self):
+      createTable("courses", ["ident","crn","textbook","start_date","end_date"], TEST_DATABASE)
+      addEntity("courses",CSCI3651, TEST_DATABASE)
+      identsInTable("courses",TEST_DATABASE).contains("CSCI3651")
+
 
 
   

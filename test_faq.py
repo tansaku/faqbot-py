@@ -1,7 +1,8 @@
+from test_db import TEST_DATABASE
 from faq import *
 import unittest
 import os
-from test_db import TEST_DATABASE
+from sure import expect
 
 class TestFaq(unittest.TestCase):
   def setUp(self):
@@ -22,13 +23,23 @@ class TestFaq(unittest.TestCase):
        # wondering if everything should just be stored in json ...
        # what I really want is the chat interface to also be the thing that I can use to structure and generate tests ...
        # what you should have said was ""
-       
+      
   def checkEntity(self, table, ident, attributeValues, database):
     entity = grabEntity(table, ident, database)
-    self.assertIsNotNone(entity,("No entity of id '%s' in table '%s'"%(ident,table)))
+    entity.shouldnt.equal(None)
     for key, value in attributeValues.items():
-      self.assertEquals(entity[key],value)
-      
+      entity[key].should.equal(value)   
+      # entity.should.have.key(key).being.equal(value)
+
+  # NOTE DIFFERENCE WITH CODE BELOW IN XUNIT STYLE
+  # def checkEntity(self, table, ident, attributeValues, database):
+  #   entity = grabEntity(table, ident, database)
+  #   self.assertIsNotNone(entity,("No entity of id '%s' in table '%s'"%(ident,table)))
+  #   for key, value in attributeValues.items():
+  #     self.assertEquals(entity[key],value)  
+  # of course what it really makes me want it be able to paint my own 
+  # operations onto objects ...  
+    
   def sayAndCheckEntity(self,sentence, response, table, ident, attributeValues, database = TEST_DATABASE):
     self.assertEquals(query(sentence, database_name = database), response) 
     self.checkEntity(table, ident, attributeValues, database)
@@ -45,7 +56,28 @@ class TestFaq(unittest.TestCase):
       for (question, answer,user) in questions:
         self.sayAndCheck(question, answer)
 
+  def checkTable(self,table,database = TEST_DATABASE):
+    return identsInTable(table,database)
+
+  def say(self, sentence, database = TEST_DATABASE):
+    return query(sentence, database_name = database)
+  # for really beautiful code the tests below should be more like:
+  #self.say("There is a course CS169 called Software Engineering").AndCheckResponseIs("OK")
+      #.AndThatTable("courses").containsObjectNamed("CS169")
+          #.withTheseContents({"name":"Software Engineering","ident":"CS169"})
+
+  def testSay(self):   
+    self.say("There is a course CS169 called Software Engineering").should.eql("OK")
+    self.checkTable("courses").contains("CS169")
+    self.checkEntity("courses", "CS169", {"name":"Software Engineering","ident":"CS169"}, TEST_DATABASE)
+    entity = grabEntity("courses", "CS169", TEST_DATABASE)
+    entity.shouldnt.equal(None)
+    response = self.say("There is a course CS169 called Software Engineering")
+    #raise Exception(response)
+    expect(response).to.equal("OK")
+
   # two others issues here - we can't handle periods in words, or names like "Software as a Service"
+  @unittest.skip("on hold")
   def testCorrecting(self):
     self.sayAndCheckEntity("There is a course CS169 called Software Engineering", "OK","courses", "CS169", {"name":"Software Engineering","ident":"CS169"})
     self.sayAndCheckEntity("CS169 has a start date of Sep 29th 2013", "OK","courses", "CS169", {"name":"Software Engineering","ident":"CS169","start_date":"Sep 29th 2013"})
@@ -71,8 +103,6 @@ class TestFaq(unittest.TestCase):
     # makes me think we don't want to be adding to ongoing running tests - just want to 
     # gradually pull out the new q-a pairs and create appropriate tests based on them
 
-
-    
   def testCreateGameEngine(self):
     self.sayAndCheckEntity("There is a game engine Unreal Engine", "OK", "game_engines", "Unreal Engine", {"name":"Unreal Engine","ident":"Unreal Engine"})
     self.sayAndCheckEntity("There is a game engine Unity3D called Unity3D", "OK", "game_engines", "Unity3D", {"name":"Unity3D","ident":"Unity3D"})
